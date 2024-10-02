@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Authentication System</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000;   
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 400px;
+            background: #171515;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            padding: 40px;
+        }
+
+        .profile-container {
+            max-width: 800px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            background-color: #dadada;
+            border-radius: 30px;
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #8e44ad;
+            margin-top: 20px;
+            text-transform: uppercase;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #7d3c98;
+        }
+
+        .switch-form {
+            text-align: center;
+            margin-top: 20px;
+            color: #fff;
+        }
+
+        .switch-form a {
+            color: #8e44ad;
+            padding-left: 20px;
+            text-decoration: none;
+        }
+
+        /* Profile page specific styles */
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .profile-image-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .profile-image-container {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin: 0 auto 15px;
+            border: 3px solid #8e44ad;
+        }
+
+        .profile-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Popup styles */
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            display: none;
+        }
+
+        .popup.show {
+            display: block;
+        }
+
+        .popup-icon {
+            width: 60px;
+            height: 60px;
+            background: #5b21b6;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 24px;
+        }
+
+        .popup h2 {
+            margin-bottom: 10px;
+        }
+
+        .popup p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        #profilePage, #loginPage, #signupPage {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="signupPage" class="container">
+        <h1>Sign Up</h1>
+        <form id="signupForm">
+            <div class="form-group">
+                <label for="signupName">Full Name</label>
+                <input type="text" id="signupName" required>
+            </div>
+            <div class="form-group">
+                <label for="signupEmail">Email</label>
+                <input type="email" id="signupEmail" required>
+            </div>
+            <div class="form-group">
+                <label for="signupPassword">Password</label>
+                <input type="password" id="signupPassword" required>
+            </div>
+            <button type="submit">Sign Up</button>
+        </form>
+        <div class="switch-form">
+            Already have an account? <a href="#" onclick="showLogin()">Log In</a>
+        </div>
+    </div>
+
+    <div id="loginPage" class="container">
+        <h1>Log In</h1>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="loginEmail">Email</label>
+                <input type="email" id="loginEmail" required>
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">Password</label>
+                <input type="password" id="loginPassword" required>
+            </div>
+            <button type="submit">Log In</button>
+        </form>
+        <div class="switch-form">
+            Don't have an account? <a href="#" onclick="showSignup()">Sign Up</a>
+        </div>
+    </div>
+
+    <div id="profilePage" class="container profile-container">
+        <div class="profile-header">
+            <a href="#" onclick="logout()" style="color: #666; text-decoration: none;">← Back to home</a>
+            <span style="color: #666;">Edit Profile</span>
+        </div>
+        <div class="profile-image-section">
+            <div class="profile-image-container">
+                <img src="/api/placeholder/150/150" alt="Profile" id="profileImage" class="profile-image">
+            </div>
+            <button onclick="document.getElementById('fileInput').click()" style="width: auto; padding: 8px 16px; font-size: 14px;">
+                Change Photo
+            </button>
+            <input type="file" id="fileInput" style="display: none" accept="image/*">
+        </div>
+        <form id="profileForm">
+            <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+                <div class="form-group" style="flex: 1;">
+                    <label for="firstName">First Name</label>
+                    <input type="text" id="firstName">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label for="lastName">Last Name</label>
+                    <input type="text" id="lastName">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="profileEmail">Email</label>
+                <input type="email" id="profileEmail">
+            </div>
+            <div class="form-group">
+                <label for="address">Address</label>
+                <input type="text" id="address">
+            </div>
+            <div class="form-group">
+                <label for="phone">Phone</label>
+                <input type="tel" id="phone">
+            </div>
+            <div class="form-group">
+                <label for="bank">Bio</label>
+                <input type="text" id="bank">
+            </div>
+            <button type="submit" style="width: auto; float: right;">Save Profile</button>
+        </form>
+    </div>
+
+    <div class="popup" id="successPopup">
+        <div class="popup-icon">✓</div>
+        <h2>Good Job, <span id="userName">User</span>!</h2>
+        <p>Your profile has been successfully created.</p>
+        <button onclick="hidePopup()">View my profile</button>
+    </div>
+
+    <script>
+        // Show/hide pages
+        function showSignup() {
+            document.getElementById('signupPage').style.display = 'block';
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('profilePage').style.display = 'none';
+        }
+
+        function showLogin() {
+            document.getElementById('signupPage').style.display = 'none';
+            document.getElementById('loginPage').style.display = 'block';
+            document.getElementById('profilePage').style.display = 'none';
+        }
+
+        function showProfile() {
+            document.getElementById('signupPage').style.display = 'none';
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('profilePage').style.display = 'block';
+        }
+
+        // Check for existing session on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (currentUser) {
+                loadProfile(currentUser);
+                showProfile();
+            } else {
+                showLogin();
+            }
+        });
+
+        // Handle signup
+        document.getElementById('signupForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+
+            const newUser = {
+                name,
+                email,
+                password,
+                profileImage: '/api/placeholder/150/150'
+            };
+
+            localStorage.setItem('user_' + email, JSON.stringify(newUser));
+            localStorage.setItem('currentUser', JSON.stringify(newUser));
+
+            document.getElementById('userName').textContent = name.split(' ')[0];
+            document.getElementById('successPopup').classList.add('show');
+        });
+
+        // Handle login
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            const user = JSON.parse(localStorage.getItem('user_' + email));
+            if (user && user.password === password) {
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                loadProfile(user);
+                showProfile();
+            } else {
+                alert('Invalid credentials');
+            }
+        });
+
+        // Handle profile image change
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageUrl = e.target.result;
+                    document.getElementById('profileImage').src = imageUrl;
+                    
+                    // Update user data with new image
+                    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                    currentUser.profileImage = imageUrl;
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    localStorage.setItem('user_' + currentUser.email, JSON.stringify(currentUser));
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Handle profile form
+        document.getElementById('profileForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            
+            const updatedUser = {
+                ...currentUser,
+                name: document.getElementById('firstName').value + ' ' + document.getElementById('lastName').value,
+                email: document.getElementById('profileEmail').value,
+                address: document.getElementById('address').value,
+                phone: document.getElementById('phone').value,
+                bank: document.getElementById('bank').value
+            };
+
+            localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+            localStorage.setItem('user_' + updatedUser.email, JSON.stringify(updatedUser));
+            
+            alert('Profile updated successfully!');
+        });
+
+        function hidePopup() {
+            document.getElementById('successPopup').classList.remove('show');
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            loadProfile(currentUser);
+            showProfile();
+        }
+
+        function loadProfile(user) {
+            const [firstName, lastName] = user.name.split(' ');
+            document.getElementById('firstName').value = firstName || '';
+            document.getElementById('lastName').value = lastName || '';
+            document.getElementById('profileEmail').value = user.email || '';
+            document.getElementById('address').value = user.address || '';
+            document.getElementById('phone').value = user.phone || '';
+            document.getElementById('bank').value = user.bank || '';
+            document.getElementById('profileImage').src = user.profileImage || '/api/placeholder/150/150';
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            showLogin();
+        }
+    </script>
+</body>
+</html>
